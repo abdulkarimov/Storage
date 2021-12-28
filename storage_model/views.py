@@ -1,5 +1,5 @@
 from django.forms import model_to_dict
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from rest_framework import permissions, status
 from rest_framework.decorators import permission_classes
 from rest_framework.generics import get_object_or_404
@@ -27,7 +27,6 @@ class StorageView(APIView):
         product = Product(image=image, name=name, price=price, count=count, category=Category.objects.get(id=category))
         product.save()
         return JsonResponse(model_to_dict(product))
-
 
     def put(self, request, pk):
         try:
@@ -84,5 +83,27 @@ class CategoryView(APIView):
         return Response({
             "message": "category with id {} has been deleted.".format(pk)
         }, status=204)
+
+
+@permission_classes((permissions.AllowAny,))
+class UpdateCountView(APIView):
+    def post(self, request, pk):
+        product = Product.objects.get(pk=pk)
+        data = json.loads(request.body.decode('utf-8'))['Product']
+        count = data['count']
+        operation = data['operation']
+
+        if operation == "-":
+            product.count = product.count - count
+        elif operation == "+":
+            product.count = product.count + count
+        if product.count >= 0:
+            product.save()
+        else:
+            return HttpResponse("count < 0")
+        return HttpResponse("message: OK")
+
+
+
 
 
