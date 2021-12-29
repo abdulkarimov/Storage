@@ -57,32 +57,40 @@ class CategoryView(APIView):
         return Response({"category": serializer.data})
 
     def post(self, request):
-        serializer = CategorySerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        data = json.loads(request.body.decode('utf-8'))['Category']
+        name = data['name']
 
+        for i in data:
+            if i == 'parent':
+                parent = data['parent']
+                category = Category(name=name, parent=Category.objects.get(id=parent))
+            else :
+                category = Category(name=name)
+
+        category.save()
+        return JsonResponse(model_to_dict(category))
 
     def put(self, request, pk):
-        try:
-            category = Category.objects.get(pk=pk)
-        except Category.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        category = Category.objects.get(pk=pk)
+        data = json.loads(request.body.decode('utf-8'))['Category']
+        for i in data:
+            if i == 'name':
+                name = data['name']
+                category.name = name
+            elif i == 'parent':
+                parent = data['parent']
+                category.parent = parent
+        category.save()
+        return JsonResponse(model_to_dict(category))
 
-        serializer = CategorySerializer(category, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-
-        return Response(serializer.data)
 
     def delete(self, request, pk):
-        # Get object with this pk
-        category = get_object_or_404(Category.objects.all(), pk=pk)
-        category.delete()
-        return Response({
-            "message": "category with id {} has been deleted.".format(pk)
-        }, status=204)
+            # Get object with this pk
+            category = Category.objects.get(pk=pk)
+            category.delete()
+            return Response({
+                "message": "category with id {} has been deleted.".format(pk)
+            }, status =  204)
 
 
 @permission_classes((permissions.AllowAny,))
