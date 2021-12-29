@@ -6,7 +6,6 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'image', 'name', 'price', 'count', 'category']
-        depth = 1
 
 
 class CategorySerializer(serializers.ModelSerializer):

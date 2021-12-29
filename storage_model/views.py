@@ -29,16 +29,12 @@ class StorageView(APIView):
         return JsonResponse(model_to_dict(product))
 
     def put(self, request, pk):
-        try:
-            product = Product.objects.get(pk=pk)
-        except Product.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        serializer = ProductSerializer(product, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-
-        return Response(serializer.data)
+        saved_product_method = get_object_or_404(Product.objects.all(), pk=pk)
+        data = request.data
+        serializer = ProductSerializer(instance=saved_product_method, data=data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            saved_product_method = serializer.save()
+        return JsonResponse(model_to_dict(saved_product_method))
 
     def delete(self, request, pk):
         # Get object with this pk
@@ -77,7 +73,7 @@ class CategoryView(APIView):
             if i == 'name':
                 name = data['name']
                 category.name = name
-            elif i == 'parent':
+            if i == 'parent':
                 parent = data['parent']
                 category.parent = parent
         category.save()
