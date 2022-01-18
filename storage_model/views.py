@@ -60,7 +60,7 @@ class CategoryView(APIView):
             if i == 'parent':
                 parent = data['parent']
                 category = Category(name=name, parent=Category.objects.get(id=parent))
-            else :
+            else:
                 category = Category(name=name)
 
         category.save()
@@ -86,7 +86,7 @@ class CategoryView(APIView):
             category.delete()
             return Response({
                 "message": "category with id {} has been deleted.".format(pk)
-            }, status =  204)
+            }, status = 204)
 
 
 @permission_classes((permissions.AllowAny,))
@@ -108,6 +108,10 @@ class UpdateCountView(APIView):
         return HttpResponse("message: OK")
 
 
-
-
+@permission_classes((permissions.AllowAny,))
+class getProductByIDView(APIView):
+    def get(self, request, pk):
+        product = Product.objects.filter(pk=pk)
+        serializer = ProductSerializer(instance=product, many=True)
+        return Response(serializer.data)
 
