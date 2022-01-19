@@ -8,8 +8,9 @@ from rest_framework.views import APIView
 from storage_model.models import Product, Category
 from storage_model.serializers import ProductSerializer, CategorySerializer
 import json
-
-
+import os
+from django.urls import path
+from datetime import datetime
 @permission_classes((permissions.AllowAny,))
 class StorageView(APIView):
     def get(self, request):
@@ -29,12 +30,30 @@ class StorageView(APIView):
         return JsonResponse(model_to_dict(product))
 
     def put(self, request, pk):
-        saved_product_method = get_object_or_404(Product.objects.all(), pk=pk)
-        data = request.data
-        serializer = ProductSerializer(instance=saved_product_method, data=data, partial=True)
-        if serializer.is_valid(raise_exception=True):
-            saved_product_method = serializer.save()
-        return JsonResponse(model_to_dict(saved_product_method))
+        product = Product.objects.get(pk=pk)
+        data = json.loads(request.body.decode('utf-8'))['Product']
+        for i in data:
+            if i == 'id':
+                temp = data['id']
+                product.id = temp
+            if i == 'image':
+                temp = data['image']
+                product.image = temp
+            if i == 'name':
+                temp = data['name']
+                product.name = temp
+            if i == 'price':
+                temp = data['price']
+                product.price = temp
+            if i == 'count':
+                temp = data['count']
+                product.count = temp
+            if i == 'category_id':
+                temp = data['category_id']
+                product.category_id = temp
+
+        product.save()
+        return Response("OK")
 
     def delete(self, request, pk):
         # Get object with this pk
@@ -114,4 +133,29 @@ class getProductByIDView(APIView):
         product = Product.objects.filter(pk=pk)
         serializer = ProductSerializer(instance=product, many=True)
         return Response(serializer.data)
+
+@permission_classes((permissions.AllowAny,))
+class uploadFile(APIView):
+    def post(self, request ):
+        up_file = request.FILES['file']
+
+
+        now = datetime.now()
+        timestamp = datetime.timestamp(now)
+
+        photo = up_file.name.split('.')
+        photo[0] = str(timestamp) + '.'
+
+
+
+
+        destination = open(os.path.dirname(__file__) + "/photo/" + photo[0] + photo[1], 'wb+')
+
+        for chunk in up_file.chunks():
+            destination.write(chunk)
+        destination.close()
+
+        return HttpResponse(photo[0] + photo[1])
+
+
 
