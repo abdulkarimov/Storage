@@ -1,6 +1,6 @@
 from django.urls import path
 
-from storage_model.views import StorageView, CategoryView, UpdateCountView, getProductByIDView,uploadFile
+from storage_model.views import StorageView, CategoryView, UpdateCountView, getProductByIDView, uploadFile, giveImage
 
 app_name = 'storage'
 urlpatterns = [
@@ -11,5 +11,6 @@ urlpatterns = [
     path('updateCount/<int:pk>', UpdateCountView.as_view()),
     path('getProductByID/<int:pk>', getProductByIDView.as_view()),
     path('getFile/', uploadFile.as_view()),
+    path('getImage/<image>', giveImage.as_view()),
 
 ]

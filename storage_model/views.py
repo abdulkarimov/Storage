@@ -53,7 +53,9 @@ class StorageView(APIView):
                 product.category_id = temp
 
         product.save()
-        return Response("OK")
+        return JsonResponse(model_to_dict(product))
+
+        # return Response(product)
 
     def delete(self, request, pk):
         # Get object with this pk
@@ -147,15 +149,24 @@ class uploadFile(APIView):
         photo[0] = str(timestamp) + '.'
 
 
-
-
         destination = open(os.path.dirname(__file__) + "/photo/" + photo[0] + photo[1], 'wb+')
 
         for chunk in up_file.chunks():
             destination.write(chunk)
         destination.close()
+        myjson = {
+            "photo": photo[0] + photo[1]
+        }
+        return Response(myjson)
 
-        return HttpResponse(photo[0] + photo[1])
+@permission_classes((permissions.AllowAny,))
+class giveImage(APIView):
+    def get(self, request, image):
+        file_path = os.path.join(os.path.dirname(__file__) + "/photo/",image)
+        image = open(file_path, "rb")
+        return HttpResponse(image.read(), content_type="image/jpeg")
+
+
 
 
 
