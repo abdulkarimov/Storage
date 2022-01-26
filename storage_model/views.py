@@ -9,6 +9,7 @@ from storage_model.models import Product, Category
 from storage_model.serializers import ProductSerializer, CategorySerializer
 import json
 import os
+import imghdr
 from django.urls import path
 from datetime import datetime
 @permission_classes((permissions.AllowAny,))
@@ -140,8 +141,6 @@ class getProductByIDView(APIView):
 class uploadFile(APIView):
     def post(self, request ):
         up_file = request.FILES['file']
-
-
         now = datetime.now()
         timestamp = datetime.timestamp(now)
 
@@ -149,15 +148,19 @@ class uploadFile(APIView):
         photo[0] = str(timestamp) + '.'
 
 
-        destination = open(os.path.dirname(__file__) + "/photo/" + photo[0] + photo[1], 'wb+')
+        if photo[1] == 'png' or photo[1] == 'jpeg' or photo[1] == 'jpg':
 
-        for chunk in up_file.chunks():
-            destination.write(chunk)
-        destination.close()
-        myjson = {
-            "photo": photo[0] + photo[1]
-        }
-        return Response(myjson)
+            destination = open(os.path.dirname(__file__) + "/photo/" + photo[0] + photo[1], 'wb+')
+
+            for chunk in up_file.chunks():
+                destination.write(chunk)
+            destination.close()
+            myjson = {
+                "photo": photo[0] + photo[1]
+            }
+            return Response(myjson)
+        else:
+            return Response("false")
 
 @permission_classes((permissions.AllowAny,))
 class giveImage(APIView):
