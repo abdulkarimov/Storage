@@ -5,7 +5,7 @@ from .category import Category
 class Product(models.Model):
     image = models.CharField(max_length=200)
     name = models.CharField(max_length=20)
-    price = models.IntegerField()
+    price = models.CharField(max_length=20)
     count = models.IntegerField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
